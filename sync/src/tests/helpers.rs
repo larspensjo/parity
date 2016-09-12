@@ -29,6 +29,7 @@ pub struct TestIo<'p> {
 	pub snapshot_service: &'p TestSnapshotService,
 	pub queue: &'p mut VecDeque<TestPacket>,
 	pub sender: Option<PeerId>,
+	overlay: RwLock<HashMap<BlockNumber, Bytes>>,
 }
 
 impl<'p> TestIo<'p> {
@@ -37,7 +38,8 @@ impl<'p> TestIo<'p> {
 			chain: chain,
 			snapshot_service: ss,
 			queue: queue,
-			sender: sender
+			sender: sender,
+			overlay: RwLock::new(HashMap::new()),
 		}
 	}
 }
@@ -81,6 +83,10 @@ impl<'p> SyncIo for TestIo<'p> {
 
 	fn eth_protocol_version(&self, _peer: PeerId) -> u8 {
 		64
+	}
+
+	fn chain_overlay(&self) -> &RwLock<HashMap<BlockNumber, Bytes>> {
+		&self.overlay
 	}
 }
 
@@ -141,6 +147,7 @@ impl TestNet {
 			for client in 0..self.peers.len() {
 				if peer != client {
 					let mut p = self.peers.get_mut(peer).unwrap();
+					p.sync.write().restart(&mut TestIo::new(&mut p.chain, &p.snapshot_service, &mut p.queue, Some(client as PeerId)));
 					p.sync.write().on_peer_connected(&mut TestIo::new(&mut p.chain, &p.snapshot_service, &mut p.queue, Some(client as PeerId)), client as PeerId);
 				}
 			}
