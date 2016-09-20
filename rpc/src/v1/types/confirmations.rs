@@ -19,9 +19,10 @@
 use v1::types::{U256, TransactionRequest, H160, H256};
 use v1::helpers;
 
+use std::fmt;
 
 /// Confirmation waiting in a queue
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct ConfirmationRequest {
 	/// Id of this confirmation
 	pub id: U256,
@@ -38,8 +39,24 @@ impl From<helpers::ConfirmationRequest> for ConfirmationRequest {
 	}
 }
 
+impl fmt::Display for ConfirmationRequest {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		write!(f, "id: {:?}, {}", self.id, self.payload)
+	}
+}
+
+impl fmt::Display for ConfirmationPayload {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		match self {
+			&ConfirmationPayload::Transaction(ref transaction)
+				=> write!(f, "{}", transaction),
+			&ConfirmationPayload::Sign(_) => write!(f, "TODO: data"),
+		}
+	}
+}
+
 /// Sign request
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct SignRequest {
 	/// Address
 	pub address: H160,
@@ -48,7 +65,7 @@ pub struct SignRequest {
 }
 
 /// Confirmation payload, i.e. the thing to be confirmed
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub enum ConfirmationPayload {
 	/// Transaction
 	#[serde(rename="transaction")]
@@ -71,7 +88,7 @@ impl From<helpers::ConfirmationPayload> for ConfirmationPayload {
 }
 
 /// Possible modifications to the confirmed transaction sent by `Trusted Signer`
-#[derive(Debug, PartialEq, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct TransactionModification {
 	/// Modified gas price
 	#[serde(rename="gasPrice")]
@@ -147,4 +164,3 @@ mod tests {
 		});
 	}
 }
-

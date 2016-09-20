@@ -46,6 +46,7 @@ clippy = { version = "0.0.90", optional = true}
 ethcore-stratum = { path = "stratum" }
 serde = "0.8.0"
 serde_json = "0.8.0"
+rpc-cli = { path = "rpc_cli" }
 
 [target.'cfg(windows)'.dependencies]
 winapi = "0.2"
@@ -80,4 +81,3 @@ name = "parity"
 [profile.release]
 debug = false
 lto = false
-
