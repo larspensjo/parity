@@ -571,12 +571,14 @@ impl ChainSync {
 			let mut downloader = match block_set {
 				BlockSet::NewBlocks => &mut self.new_blocks,
 				BlockSet::OldBlocks => {
-					if self.old_blocks.is_none() {
-						trace!(target: "sync", "Ignored block headers while block download is inactive");
-						self.continue_sync(io);
-						return Ok(());
+					match self.old_blocks {
+						None => {
+							trace!(target: "sync", "Ignored block headers while block download is inactive");
+							self.continue_sync(io);
+							return Ok(());
+						},
+						Some(ref mut blocks) => blocks,
 					}
-					self.old_blocks.as_mut().expect("Checked with condition above; qed")
 				}
 			};
 			downloader.import_headers(io, r, expected_hash)
@@ -625,13 +627,13 @@ impl ChainSync {
 			let result = {
 				let mut downloader = match block_set {
 					BlockSet::NewBlocks => &mut self.new_blocks,
-					BlockSet::OldBlocks => {
-						if self.old_blocks.is_none() {
+					BlockSet::OldBlocks => match self.old_blocks {
+						None => {
 							trace!(target: "sync", "Ignored block headers while block download is inactive");
 							self.continue_sync(io);
 							return Ok(());
-						}
-						self.old_blocks.as_mut().expect("Checked with condition above; qed")
+						},
+						Some(ref mut blocks) => blocks,
 					}
 				};
 				downloader.import_bodies(io, r)
@@ -679,13 +681,13 @@ impl ChainSync {
 			let result = {
 				let mut downloader = match block_set {
 					BlockSet::NewBlocks => &mut self.new_blocks,
-					BlockSet::OldBlocks => {
-						if self.old_blocks.is_none() {
+					BlockSet::OldBlocks => match self.old_blocks {
+						None => {
 							trace!(target: "sync", "Ignored block headers while block download is inactive");
 							self.continue_sync(io);
 							return Ok(());
-						}
-						self.old_blocks.as_mut().expect("Checked with condition above; qed")
+						},
+						Some(ref mut blocks) => blocks,
 					}
 				};
 				downloader.import_receipts(io, r)
