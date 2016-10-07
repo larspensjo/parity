@@ -28,10 +28,10 @@ use std::sync::{Condvar as SCondvar, Mutex as SMutex};
 
 const STACK_SIZE: usize = 16*1024*1024;
 
+/// Stack size
+/// Should be modified if it is changed in Rust since it is no way
+/// to know or get it
 thread_local! {
-	/// Stack size
-	/// Should be modified if it is changed in Rust since it is no way
-	/// to know or get it
 	pub static LOCAL_STACK_SIZE: Cell<usize> = Cell::new(::std::env::var("RUST_MIN_STACK").ok().and_then(|s| s.parse().ok()).unwrap_or(2 * 1024 * 1024));
 }
 
